@@ -195,10 +195,10 @@ export const ProductList = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-indigo-600 truncate dark:text-indigo-400">
-                          {product.name}
+                          <span className="font-bold">Nombre:</span> {product.name}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          ${product.price} / {product.unit}
+                          <span className="font-bold">Precio:</span> ${product.price} / {product.unit}
                         </p>
                       </div>
                       <div className="mt-2 flex justify-between">

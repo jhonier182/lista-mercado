@@ -253,9 +253,9 @@ export const ProductForm = ({ product, onSave, onCancel }) => {
               >
                 <option value="unidad">unidad</option>
                 <option value="kg">kg</option>
-                <option value="g">g</option>
-                <option value="l">l</option>
-                <option value="ml">ml</option>
+                <option value="gr">gr</option>
+                <option value="litros">litros</option>
+                <option value="mililitros">mililitros</option>
               </select>
             </div>
           </div>
