@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { PrivateRoute } from './auth/PrivateRoute';
@@ -10,8 +10,9 @@ import { Register } from './auth/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Profile } from './pages/Profile';
 import { Support } from './pages/Support';
-import { Comparison } from './pages/Comparison';
 import { ProductList } from './components/Product/ProductList';
+import { CategoryManagement } from './pages/CategoryManagement';
+import { StoreManagement } from './pages/StoreManagement';
 
 function App() {
   return (
@@ -33,9 +34,11 @@ function App() {
           
           <main className="container mx-auto px-4 py-8">
             <Routes>
+              {/* Rutas públicas */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/support" element={<Support />} />
               
               {/* Rutas protegidas */}
               <Route
@@ -55,10 +58,18 @@ function App() {
                 }
               />
               <Route
-                path="/comparison"
+                path="/categories"
                 element={
                   <PrivateRoute>
-                    <Comparison />
+                    <CategoryManagement />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/stores"
+                element={
+                  <PrivateRoute>
+                    <StoreManagement />
                   </PrivateRoute>
                 }
               />
@@ -70,7 +81,12 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              <Route path="/support" element={<Support />} />
+              
+              {/* Redirecciones */}
+              <Route path="/comparison" element={<Navigate to="/products" replace />} />
+              
+              {/* Ruta de fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
           

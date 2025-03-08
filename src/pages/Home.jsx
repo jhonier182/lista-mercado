@@ -1,43 +1,113 @@
 import { Link } from 'react-router-dom';
+import { Button, Card } from 'flowbite-react';
+import { HiShoppingCart, HiChartPie, HiCurrencyDollar, HiUserGroup } from 'react-icons/hi';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Home = () => {
+  const { user } = useAuth();
+  
+  // Si el usuario está autenticado, redirigir al dashboard
+  if (user) {
+    return <Link to="/dashboard" replace />;
+  }
+  
+  const features = [
+    {
+      icon: HiShoppingCart,
+      title: "Gestión de Productos",
+      description: "Organiza tus productos por categorías y tiendas. Mantén un registro detallado de precios y cantidades."
+    },
+    {
+      icon: HiChartPie,
+      title: "Análisis de Precios",
+      description: "Compara precios entre diferentes tiendas y visualiza el historial de precios de tus productos."
+    },
+    {
+      icon: HiCurrencyDollar,
+      title: "Control de Gastos",
+      description: "Monitorea tus gastos mensuales y establece presupuestos para tus compras."
+    },
+    {
+      icon: HiUserGroup,
+      title: "Experiencia Personalizada",
+      description: "Crea tu lista personalizada de productos y recibe recomendaciones basadas en tus hábitos de compra."
+    }
+  ];
+
   return (
-    <section className="bg-white dark:bg-gray-900">
-      <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-12">
-        <h1 className="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+    <div className="space-y-12">
+      {/* Hero Section */}
+      <section className="text-center space-y-8 py-12">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white">
           Gestiona tu lista de mercado de forma inteligente
         </h1>
-        <p className="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400">
-          Organiza tus compras, compara precios y ahorra dinero con nuestra aplicación de gestión de lista de mercado.
+        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+          Organiza tus compras, compara precios y ahorra dinero con nuestra aplicación 
+          diseñada para hacer tus compras más eficientes.
         </p>
-        <div className="flex flex-col mb-8 lg:mb-16 space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
-          <Link
+        <div className="flex flex-wrap justify-center gap-4">
+          <Button
+            as={Link}
             to="/register"
-            className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
+            size="xl"
+            gradientDuoTone="purpleToBlue"
           >
-            Comenzar
-            <svg
-              className="ml-2 -mr-1 w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </Link>
-          <Link
-            to="/about"
-            className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
+            Comenzar Ahora
+          </Button>
+          <Button
+            as={Link}
+            to="/login"
+            size="xl"
+            color="gray"
+            outline
           >
-            Saber más
-          </Link>
+            Iniciar Sesión
+          </Button>
         </div>
-    
-      </div>
-    </section>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-12 bg-gray-50 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
+            Características Principales
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
+                <div className="text-center space-y-4">
+                  <feature.icon className="h-12 w-12 text-primary-600 mx-auto" />
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {feature.description}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 text-center space-y-6">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+          ¿Listo para empezar?
+        </h2>
+        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          Únete a nuestra comunidad y comienza a gestionar tus compras de manera más inteligente.
+        </p>
+        <Button
+          as={Link}
+          to="/register"
+          size="xl"
+          gradientDuoTone="purpleToBlue"
+          className="mt-6"
+        >
+          Crear Cuenta Gratis
+        </Button>
+      </section>
+    </div>
   );
 };
