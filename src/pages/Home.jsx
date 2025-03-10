@@ -45,21 +45,24 @@ export const Home = () => {
           Organiza tus compras, compara precios y ahorra dinero con nuestra aplicación 
           diseñada para hacer tus compras más eficientes.
         </p>
-        <div className="flex flex-wrap justify-center gap-4 dark:text-white">
+
+        <div className="flex flex-wrap justify-center gap-4 ">
+
           <Button
             as={Link}
             to="/register"
-            size="xl"
-            gradientDuoTone="purpleToBlue"
-          >
+            color='gray'
+            outline
+            >
             Comenzar Ahora
           </Button>
+
           <Button
             as={Link}
             to="/login"
-            size="xl"
             color="gray"
             outline
+            clas
           >
             Iniciar Sesión
           </Button>

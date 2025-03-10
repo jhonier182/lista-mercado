@@ -20,10 +20,10 @@ export const Login = () => {
       if (result.error) {
         throw new Error(result.error);
       }
-      toast.success('¡Bienvenido de vuelta!');
+      toast.success('¡Bienvenido!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.message || 'Error al iniciar sesión');
+      toast.error('Error al inciar sesion con Google' + error.message);
     } finally {
       setLoading(false);
     }
