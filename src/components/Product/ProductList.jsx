@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { getProducts, deleteProduct } from '../../services/productService';
+import { getCategories } from '../../services/categoryService';
+import { getStores } from '../../services/storeService';
 import { ProductForm } from './ProductForm';
 import { AuthCheck } from '../../auth/AuthCheck';
 import toast from 'react-hot-toast';
 
 export const ProductList = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -14,13 +18,22 @@ export const ProductList = () => {
     search: '',
     category: '',
     store: '',
+    minPrice: '',
+    maxPrice: '',
+    brand: '',
     orderBy: { field: 'createdAt', direction: 'desc' }
   });
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     loadProducts();
-  }, [filters, retryCount]);
+    loadCategories();
+    loadStores();
+  }, [retryCount]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [filters.category, filters.store, filters.orderBy, filters.search, filters.brand, filters.minPrice, filters.maxPrice]);
 
   const loadProducts = async () => {
     try {
@@ -28,7 +41,15 @@ export const ProductList = () => {
       setError(null);
       
       console.log("Cargando productos con filtros:", filters);
-      const { products, error } = await getProducts(filters);
+      const { products, error } = await getProducts({
+        category: filters.category,
+        store: filters.store,
+        brand: filters.brand,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        search: filters.search,
+        orderBy: filters.orderBy
+      });
       
       if (error) {
         console.error("Error al cargar productos:", error);
@@ -45,6 +66,32 @@ export const ProductList = () => {
       toast.error(`Error inesperado: ${err.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const { categories, error } = await getCategories();
+      if (error) {
+        console.error("Error al cargar categorías:", error);
+        return;
+      }
+      setCategories(categories || []);
+    } catch (err) {
+      console.error("Error inesperado al cargar categorías:", err);
+    }
+  };
+
+  const loadStores = async () => {
+    try {
+      const { stores, error } = await getStores();
+      if (error) {
+        console.error("Error al cargar tiendas:", error);
+        return;
+      }
+      setStores(stores || []);
+    } catch (err) {
+      console.error("Error inesperado al cargar tiendas:", err);
     }
   };
 
@@ -96,13 +143,17 @@ export const ProductList = () => {
     setRetryCount(prev => prev + 1);
   };
 
-  const filteredProducts = products.filter(product => {
-    if (filters.search && !product.name.toLowerCase().includes(filters.search.toLowerCase()) && 
-        !product.brand?.toLowerCase().includes(filters.search.toLowerCase())) {
-      return false;
-    }
-    return true;
-  });
+  const handleResetFilters = () => {
+    setFilters({
+      search: '',
+      category: '',
+      store: '',
+      brand: '',
+      orderBy: { field: 'createdAt', direction: 'desc' }
+    });
+  };
+
+  const filteredProducts = products;
 
   return (
     <AuthCheck>
@@ -135,15 +186,88 @@ export const ProductList = () => {
         )}
         
         {!showForm && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Buscar productos..."
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+            <div className="space-y-4">
+              {/* Búsqueda general */}
+              <div>
+                <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Buscar por nombre o marca
+                </label>
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={filters.search}
+                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Filtro por marca */}
+                <div>
+                  <label htmlFor="brand" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Marca
+                  </label>
+                  <input
+                    id="brand"
+                    type="text"
+                    placeholder="Filtrar por marca..."
+                    value={filters.brand}
+                    onChange={(e) => setFilters(prev => ({ ...prev, brand: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+                
+                {/* Filtro por categoría */}
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Categoría
+                  </label>
+                  <select
+                    id="category"
+                    value={filters.category}
+                    onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  >
+                    <option value="">Todas las categorías</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Filtro por tienda */}
+                <div>
+                  <label htmlFor="store" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Tienda
+                  </label>
+                  <select
+                    id="store"
+                    value={filters.store}
+                    onChange={(e) => setFilters(prev => ({ ...prev, store: e.target.value }))}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  >
+                    <option value="">Todas las tiendas</option>
+                    {stores.map(store => (
+                      <option key={store.id} value={store.id}>
+                        {store.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <button
+                  onClick={handleResetFilters}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -172,9 +296,19 @@ export const ProductList = () => {
             </svg>
             <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">No hay productos</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {filters.search ? 'No se encontraron productos que coincidan con tu búsqueda.' : 'Comienza agregando un nuevo producto a tu lista.'}
+              {(filters.search || filters.category || filters.store || filters.brand || filters.minPrice || filters.maxPrice) 
+                ? 'No se encontraron productos que coincidan con tus filtros.' 
+                : 'Comienza agregando un nuevo producto a tu lista.'}
             </p>
             <div className="mt-6">
+              {(filters.search || filters.category || filters.store || filters.brand || filters.minPrice || filters.maxPrice) ? (
+                <button
+                  onClick={handleResetFilters}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 mr-4"
+                >
+                  Limpiar filtros
+                </button>
+              ) : null}
               <button
                 onClick={() => setShowForm(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -188,6 +322,11 @@ export const ProductList = () => {
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Mostrando {filteredProducts.length} {filteredProducts.length === 1 ? 'producto' : 'productos'}
+              </p>
+            </div>
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredProducts.map((product) => (
                 <li key={product.id} className="px-4 py-4 sm:px-6">
@@ -204,7 +343,7 @@ export const ProductList = () => {
                       <div className="mt-2 flex justify-between">
                         <div className="sm:flex">
                           <p className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                            <span className="font-medium mr-1">Marca:</span> {product.brand}
+                            <span className="font-medium mr-1">Marca:</span> {product.brand || 'No especificada'}
                           </p>
                           <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6 dark:text-gray-400">
                             <span className="font-medium mr-1">Categoría:</span> {product.categoryName}

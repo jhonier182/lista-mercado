@@ -42,7 +42,7 @@ export const Navbar = () => {
               label={
                 <Avatar
                   alt="Foto de perfil"
-                  img={user.photoURL || "https://flowbite.com/docs/images/people/profile-picture-5.jpg"}
+                  img={user.photoURL}
                   rounded
                   bordered
                   status="online"

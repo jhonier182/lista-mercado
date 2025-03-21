@@ -21,7 +21,6 @@ export const Support = () => {
     e.preventDefault();
     setStatus({ type: 'info', message: 'Enviando mensaje...' });
 
-    // Aquí se implementaría la lógica para enviar el mensaje de soporte
     // Por ahora solo simularemos una respuesta exitosa
     setTimeout(() => {
       setStatus({

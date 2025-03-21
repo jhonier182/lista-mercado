@@ -13,6 +13,7 @@ import { Support } from './pages/Support';
 import { ProductList } from './components/Product/ProductList';
 import { CategoryManagement } from './pages/CategoryManagement';
 import { StoreManagement } from './pages/StoreManagement';
+import { Comparison } from './pages/Comparison';
 
 function App() {
   return (
@@ -83,7 +84,9 @@ function App() {
               />
               
               {/* Redirecciones */}
-              <Route path="/comparison" element={<Navigate to="/products" replace />} />
+              <Route path="/comparison"
+              element={<Comparison />}
+              />
               
               {/* Ruta de fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />
