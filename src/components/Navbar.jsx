@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatar, Dropdown } from 'flowbite-react';
@@ -10,6 +11,7 @@ export const Navbar = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -18,6 +20,10 @@ export const Navbar = () => {
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
@@ -76,11 +82,11 @@ export const Navbar = () => {
           )}
 
           <button
-            data-collapse-toggle="mobile-menu-2"
+            onClick={toggleMobileMenu}
             type="button"
             className="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
             aria-controls="mobile-menu-2"
-            aria-expanded="false"
+            aria-expanded={isMobileMenuOpen}
           >
             <span className="sr-only">Abrir menú principal</span>
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -90,17 +96,18 @@ export const Navbar = () => {
         </div>
 
         {/* Enlaces de navegación */}
-        <div className="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1" id="mobile-menu-2">
+        <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} justify-between items-center w-full lg:flex lg:w-auto lg:order-1`} id="mobile-menu-2">
           <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
             {user ? (
               <>
                 <li>
                   <Link
                     to="/dashboard"
-                    className={`block py-2 pr-4 pl-3 ${
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block py-2 pr-4 pl-3 rounded-lg ${
                       location.pathname === '/dashboard'
                         ? 'text-white bg-primary-700 lg:bg-transparent lg:text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white'
+                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white dark:hover:bg-gray-700 lg:dark:hover:bg-transparent'
                     } lg:p-0`}
                   >
                     Dashboard
@@ -109,10 +116,11 @@ export const Navbar = () => {
                 <li>
                   <Link
                     to="/products"
-                    className={`block py-2 pr-4 pl-3 ${
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block py-2 pr-4 pl-3 rounded-lg ${
                       location.pathname === '/products'
                         ? 'text-white bg-primary-700 lg:bg-transparent lg:text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white'
+                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white dark:hover:bg-gray-700 lg:dark:hover:bg-transparent'
                     } lg:p-0`}
                   >
                     Productos
@@ -121,9 +129,12 @@ export const Navbar = () => {
                 <li>
                   <Link
                     to="/price-comparison"
-                    className={`text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium ${
-                      location.pathname === '/price-comparison' ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block py-2 pr-4 pl-3 rounded-lg ${
+                      location.pathname === '/price-comparison'
+                        ? 'text-white bg-primary-700 lg:bg-transparent lg:text-primary-700'
+                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white dark:hover:bg-gray-700 lg:dark:hover:bg-transparent'
+                    } lg:p-0`}
                   >
                     Comparar Precios
                   </Link>
@@ -131,9 +142,12 @@ export const Navbar = () => {
                 <li>
                   <Link
                     to="/expenses"
-                    className={`text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium ${
-                      location.pathname === '/expenses' ? 'bg-gray-100 dark:bg-gray-700' : ''
-                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block py-2 pr-4 pl-3 rounded-lg ${
+                      location.pathname === '/expenses'
+                        ? 'text-white bg-primary-700 lg:bg-transparent lg:text-primary-700'
+                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white dark:hover:bg-gray-700 lg:dark:hover:bg-transparent'
+                    } lg:p-0`}
                   >
                     Resumen de Gastos
                   </Link>
@@ -144,10 +158,11 @@ export const Navbar = () => {
                 <li>
                   <Link
                     to="/"
-                    className={`block py-2 pr-4 pl-3 ${
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block py-2 pr-4 pl-3 rounded-lg ${
                       location.pathname === '/'
                         ? 'text-white bg-primary-700 lg:bg-transparent lg:text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white'
+                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white dark:hover:bg-gray-700 lg:dark:hover:bg-transparent'
                     } lg:p-0`}
                   >
                     Inicio
@@ -156,10 +171,11 @@ export const Navbar = () => {
                 <li>
                   <Link
                     to="/register"
-                    className={`block py-2 pr-4 pl-3 ${
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`block py-2 pr-4 pl-3 rounded-lg ${
                       location.pathname === '/register'
                         ? 'text-white bg-primary-700 lg:bg-transparent lg:text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white'
+                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white dark:hover:bg-gray-700 lg:dark:hover:bg-transparent'
                     } lg:p-0`}
                   >
                     Registrarse
@@ -170,10 +186,11 @@ export const Navbar = () => {
             <li>
               <Link
                 to="/support"
-                className={`block py-2 pr-4 pl-3 ${
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block py-2 pr-4 pl-3 rounded-lg ${
                   location.pathname === '/support'
                     ? 'text-white bg-primary-700 lg:bg-transparent lg:text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white'
+                    : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white dark:hover:bg-gray-700 lg:dark:hover:bg-transparent'
                 } lg:p-0`}
               >
                 Soporte
