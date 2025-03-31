@@ -16,44 +16,41 @@ export const MonthlyExpenses = () => {
     };
   });
 
-  useEffect(() => {
-    loadExpenses();
-  }, [selectedDate]);
-
   const loadExpenses = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const { expenses, total, error: expensesError } = await getMonthlyExpenses(
-        selectedDate.year,
-        selectedDate.month
-      );
+      // Cargar datos en paralelo
+      const [expensesResponse, categoryExpensesResponse] = await Promise.all([
+        getMonthlyExpenses(selectedDate.year, selectedDate.month),
+        getExpensesByCategory(selectedDate.year, selectedDate.month)
+      ]);
 
-      if (expensesError) {
-        setError(expensesError);
-        return;
-      }
+      if (expensesResponse.error) throw new Error(expensesResponse.error);
+      if (categoryExpensesResponse.error) throw new Error(categoryExpensesResponse.error);
 
-      const { categoryExpenses, error: categoryError } = await getExpensesByCategory(
-        selectedDate.year,
-        selectedDate.month
-      );
-
-      if (categoryError) {
-        setError(categoryError);
-        return;
-      }
-
-      setExpenses(expenses);
-      setCategoryExpenses(categoryExpenses);
-      setTotal(total);
+      setExpenses(expensesResponse.expenses);
+      setTotal(expensesResponse.total);
+      setCategoryExpenses(categoryExpensesResponse.categoryExpenses);
     } catch (err) {
       setError(err.message);
+      console.error('Error al cargar gastos:', err);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadExpenses();
+
+    // Actualizar datos cada 30 segundos
+    const interval = setInterval(() => {
+      loadExpenses();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [selectedDate]);
 
   const handleMonthChange = (e) => {
     const [year, month] = e.target.value.split('-');
@@ -68,6 +65,14 @@ export const MonthlyExpenses = () => {
       style: 'currency',
       currency: 'COP'
     }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('es-CO', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -85,12 +90,23 @@ export const MonthlyExpenses = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Resumen de Gastos Mensuales
           </h1>
-          <input
-            type="month"
-            value={`${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}`}
-            onChange={handleMonthChange}
-            className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          />
+          <div className="flex items-center space-x-4">
+            <input
+              type="month"
+              value={`${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}`}
+              onChange={handleMonthChange}
+              className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+            <button
+              onClick={loadExpenses}
+              className="flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Actualizar
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -134,6 +150,11 @@ export const MonthlyExpenses = () => {
                   </div>
                 </div>
               ))}
+              {categoryExpenses.length === 0 && (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                  No hay gastos registrados en este mes
+                </p>
+              )}
             </div>
           </div>
 
@@ -153,9 +174,11 @@ export const MonthlyExpenses = () => {
                       <h3 className="font-medium text-gray-900 dark:text-white">
                         {expense.name}
                       </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {expense.storeName || 'Sin tienda'}
-                      </p>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <p>{expense.categoryName}</p>
+                        <p>{expense.storeName}</p>
+                        <p>{formatDate(expense.createdAt)}</p>
+                      </div>
                     </div>
                     <span className="text-primary-600 dark:text-primary-400 font-semibold">
                       {formatCurrency(expense.price)}
@@ -163,6 +186,11 @@ export const MonthlyExpenses = () => {
                   </div>
                 </div>
               ))}
+              {expenses.length === 0 && (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                  No hay gastos registrados en este mes
+                </p>
+              )}
             </div>
           </div>
         </div>

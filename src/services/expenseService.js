@@ -2,9 +2,26 @@ import {
   collection, 
   query, 
   where, 
-  getDocs
+  getDocs,
+  doc,
+  getDoc
 } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
+
+const getStartAndEndDates = (year, month) => {
+  // Crear fecha de inicio (primer día del mes a las 00:00:00)
+  const startDate = new Date(year, month - 1, 1);
+  startDate.setHours(0, 0, 0, 0);
+
+  // Crear fecha de fin (primer día del siguiente mes a las 00:00:00)
+  const endDate = new Date(year, month, 1);
+  endDate.setHours(0, 0, 0, 0);
+
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString()
+  };
+};
 
 export const getMonthlyExpenses = async (year, month) => {
   try {
@@ -17,8 +34,9 @@ export const getMonthlyExpenses = async (year, month) => {
     }
 
     const userId = auth.currentUser.uid;
+    const { startDate, endDate } = getStartAndEndDates(year, month);
     
-    // Consulta simple sin ordenamiento
+    // Consulta básica solo por userId
     const q = query(
       collection(db, 'products'),
       where('userId', '==', userId)
@@ -28,23 +46,43 @@ export const getMonthlyExpenses = async (year, month) => {
     const expenses = [];
     let total = 0;
 
-    // Filtramos y ordenamos en memoria
-    const startDate = new Date(year, month - 1, 1).toISOString();
-    const endDate = new Date(year, month, 0).toISOString();
+    // Procesamiento y filtrado en memoria
+    for (const docSnapshot of querySnapshot.docs) {
+      const data = docSnapshot.data();
+      
+      // Verificar si el producto está dentro del mes seleccionado y está activo
+      if (data.isActive && data.createdAt >= startDate && data.createdAt < endDate) {
+        // Obtener detalles de la categoría
+        let categoryName = 'Sin categoría';
+        if (data.categoryId) {
+          const categoryDoc = await getDoc(doc(db, 'categories', data.categoryId));
+          if (categoryDoc.exists()) {
+            categoryName = categoryDoc.data().name;
+          }
+        }
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      if (data.isActive && data.createdAt >= startDate && data.createdAt <= endDate) {
+        // Obtener detalles de la tienda
+        let storeName = 'Sin tienda';
+        if (data.storeId) {
+          const storeDoc = await getDoc(doc(db, 'stores', data.storeId));
+          if (storeDoc.exists()) {
+            storeName = storeDoc.data().name;
+          }
+        }
+
         const expense = {
-          id: doc.id,
-          ...data
+          id: docSnapshot.id,
+          ...data,
+          categoryName,
+          storeName
         };
+
         expenses.push(expense);
         total += parseFloat(data.price) || 0;
       }
-    });
+    }
 
-    // Ordenar por fecha de creación descendente
+    // Ordenar por fecha de creación descendente en memoria
     expenses.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
     return { 

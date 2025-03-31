@@ -42,14 +42,7 @@ export const Dashboard = () => {
     expensesByCategory: []
   });
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
   const loadDashboardData = async () => {
-    setLoading(true);
-    setError(null);
-
     try {
       const currentDate = new Date();
       const currentYear = currentDate.getFullYear();
@@ -74,7 +67,7 @@ export const Dashboard = () => {
       if (expensesResponse.error) throw new Error(expensesResponse.error);
 
       // Procesar los productos recientes
-      const recentProducts = productsResponse.products
+      const recentProducts = expensesResponse.expenses
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5);
 
@@ -86,6 +79,7 @@ export const Dashboard = () => {
         recentProducts,
         expensesByCategory: expensesResponse.expenses
       });
+      setError(null);
     } catch (err) {
       setError(err.message);
       console.error('Error al cargar datos del dashboard:', err);
@@ -93,6 +87,17 @@ export const Dashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadDashboardData();
+
+    // Actualizar datos cada 30 segundos
+    const interval = setInterval(() => {
+      loadDashboardData();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-CO', {
@@ -120,9 +125,20 @@ export const Dashboard = () => {
   return (
     <AuthCheck>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-          Panel de Control
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Panel de Control
+          </h1>
+          <button
+            onClick={loadDashboardData}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Actualizar
+          </button>
+        </div>
 
         {error && (
           <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-6 dark:bg-red-900/20">
