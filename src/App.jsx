@@ -13,7 +13,8 @@ import { Support } from './pages/Support';
 import { ProductList } from './components/Product/ProductList';
 import { CategoryManagement } from './pages/CategoryManagement';
 import { StoreManagement } from './pages/StoreManagement';
-import { Comparison } from './pages/Comparison';
+import { PriceComparison } from './pages/PriceComparison';
+import { MonthlyExpenses } from './pages/MonthlyExpenses';
 
 function App() {
   return (
@@ -82,10 +83,21 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
-              {/* Redirecciones */}
-              <Route path="/comparison"
-              element={<Comparison />}
+              <Route
+                path="/expenses"
+                element={
+                  <PrivateRoute>
+                    <MonthlyExpenses />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/price-comparison"
+                element={
+                  <PrivateRoute>
+                    <PriceComparison />
+                  </PrivateRoute>
+                }
               />
               
               {/* Ruta de fallback */}

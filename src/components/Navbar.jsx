@@ -120,14 +120,22 @@ export const Navbar = () => {
                 </li>
                 <li>
                   <Link
-                    to="/comparison"
-                    className={`block py-2 pr-4 pl-3 ${
-                      location.pathname === '/comparison'
-                        ? 'text-white bg-primary-700 lg:bg-transparent lg:text-primary-700'
-                        : 'text-gray-700 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 dark:text-white'
-                    } lg:p-0`}
+                    to="/price-comparison"
+                    className={`text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium ${
+                      location.pathname === '/price-comparison' ? 'bg-gray-100 dark:bg-gray-700' : ''
+                    }`}
                   >
-                    Comparar
+                    Comparar Precios
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/expenses"
+                    className={`text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium ${
+                      location.pathname === '/expenses' ? 'bg-gray-100 dark:bg-gray-700' : ''
+                    }`}
+                  >
+                    Resumen de Gastos
                   </Link>
                 </li>
               </>
