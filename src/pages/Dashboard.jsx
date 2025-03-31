@@ -17,7 +17,7 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
-import { HiShoppingCart, HiCurrencyDollar, HiTag, HiOfficeBuilding } from 'react-icons/hi';
+import { HiShoppingCart, HiCurrencyDollar, HiTag, HiOfficeBuilding, HiRefresh } from 'react-icons/hi';
 
 ChartJS.register(
   CategoryScale,
@@ -32,6 +32,7 @@ ChartJS.register(
 
 export const Dashboard = () => {
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -83,13 +84,15 @@ export const Dashboard = () => {
     } catch (err) {
       setError(err.message);
       console.error('Error al cargar datos del dashboard:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadDashboardData();
+    const initialLoad = async () => {
+      await loadDashboardData();
+      setLoading(false);
+    };
+    initialLoad();
 
     // Actualizar datos cada 30 segundos
     const interval = setInterval(() => {
@@ -98,6 +101,12 @@ export const Dashboard = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleRefresh = async () => {
+    setUpdating(true);
+    await loadDashboardData();
+    setUpdating(false);
+  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-CO', {
@@ -130,13 +139,14 @@ export const Dashboard = () => {
             Panel de Control
           </h1>
           <button
-            onClick={loadDashboardData}
-            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            onClick={handleRefresh}
+            disabled={updating}
+            className={`flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+              updating ? 'animate-pulse' : ''
+            }`}
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Actualizar
+            <HiRefresh className={`w-4 h-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
+            {updating ? 'Actualizando...' : 'Actualizar'}
           </button>
         </div>
 
@@ -243,6 +253,11 @@ export const Dashboard = () => {
                   </div>
                 </div>
               ))}
+              {stats.recentProducts.length === 0 && (
+                <p className="text-center text-gray-500 dark:text-gray-400">
+                  No hay productos recientes
+                </p>
+              )}
             </div>
           </div>
 
