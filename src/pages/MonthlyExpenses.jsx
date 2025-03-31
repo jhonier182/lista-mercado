@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { getMonthlyExpenses, getExpensesByCategory } from '../services/expenseService';
 import { AuthCheck } from '../auth/AuthCheck';
+import { HiRefresh } from 'react-icons/hi';
 
 export const MonthlyExpenses = () => {
   const [expenses, setExpenses] = useState([]);
   const [categoryExpenses, setCategoryExpenses] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => {
     const now = new Date();
@@ -17,9 +19,6 @@ export const MonthlyExpenses = () => {
   });
 
   const loadExpenses = async () => {
-    setLoading(true);
-    setError(null);
-
     try {
       // Cargar datos en paralelo
       const [expensesResponse, categoryExpensesResponse] = await Promise.all([
@@ -33,16 +32,19 @@ export const MonthlyExpenses = () => {
       setExpenses(expensesResponse.expenses);
       setTotal(expensesResponse.total);
       setCategoryExpenses(categoryExpensesResponse.categoryExpenses);
+      setError(null);
     } catch (err) {
       setError(err.message);
       console.error('Error al cargar gastos:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadExpenses();
+    const initialLoad = async () => {
+      await loadExpenses();
+      setLoading(false);
+    };
+    initialLoad();
 
     // Actualizar datos cada 30 segundos
     const interval = setInterval(() => {
@@ -51,6 +53,12 @@ export const MonthlyExpenses = () => {
 
     return () => clearInterval(interval);
   }, [selectedDate]);
+
+  const handleRefresh = async () => {
+    setUpdating(true);
+    await loadExpenses();
+    setUpdating(false);
+  };
 
   const handleMonthChange = (e) => {
     const [year, month] = e.target.value.split('-');
@@ -98,13 +106,14 @@ export const MonthlyExpenses = () => {
               className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <button
-              onClick={loadExpenses}
-              className="flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              onClick={handleRefresh}
+              disabled={updating}
+              className={`flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+                updating ? 'animate-pulse' : ''
+              }`}
             >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Actualizar
+              <HiRefresh className={`w-4 h-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
+              {updating ? 'Actualizando...' : 'Actualizar'}
             </button>
           </div>
         </div>
